@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LMI — Interactive Prototype</title>
+  <link rel="stylesheet" href="css/styles.css">
+  <style>
+    #toast {
+      position: absolute;
+      bottom: 100px;
+      left: 50%;
+      transform: translateX(-50%) translateY(20px);
+      background: var(--neutral-900);
+      color: #fff;
+      padding: 12px 20px;
+      border-radius: 12px;
+      font-size: 14px;
+      font-weight: 500;
+      opacity: 0;
+      transition: opacity 0.25s, transform 0.25s;
+      z-index: 200;
+      pointer-events: none;
+      white-space: nowrap;
+      box-shadow: var(--shadow-elevated);
+    }
+    [data-theme="dark"] #toast { background: #F9FAFB; color: #111827; }
+    #toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+  </style>
+</head>
+<body>
+
+  <!-- Prototype control panel -->
+  <aside class="prototype-panel">
+    <h2>LMI Prototype</h2>
+    <p style="font-size:13px;color:#ccc;margin-bottom:16px">All screens · Dark mode · Vanilla JS</p>
+
+    <label for="screen-select">Jump to screen</label>
+    <select id="screen-select"></select>
+
+    <label for="role-select">User role</label>
+    <select id="role-select">
+      <option value="shopper">Shopper</option>
+      <option value="reporter">Reporter</option>
+      <option value="vendor">Vendor</option>
+      <option value="admin">Admin</option>
+    </select>
+
+    <label>Dark mode</label>
+    <div class="toggle-row">
+      <span style="font-size:13px">Theme</span>
+      <button class="toggle" id="dark-toggle" aria-label="Toggle dark mode"></button>
+    </div>
+
+    <label for="lang-select">Language</label>
+    <select id="lang-select">
+      <option value="en">English</option>
+      <option value="pidgin">Nigerian Pidgin</option>
+    </select>
+
+    <button class="ctrl-btn" id="btn-splash">Go to splash</button>
+    <button class="ctrl-btn secondary" id="btn-badge">Badge unlock modal</button>
+    <button class="ctrl-btn secondary" id="btn-reset">Reset prototype</button>
+
+    <p class="screen-count" id="screen-count"></p>
+  </aside>
+
+  <!-- Phone device -->
+  <div class="phone" id="phone">
+    <div class="phone-notch">
+      <div class="status-bar">
+        <span>9:41</span>
+        <span>●●●</span>
+      </div>
+    </div>
+
+    <header class="app-header" id="app-header">
+      <button class="back-btn hidden" id="back-btn" aria-label="Go back"></button>
+      <h1 id="header-title"></h1>
+      <button class="header-action" id="header-action" style="visibility:hidden">···</button>
+    </header>
+
+    <main class="screen-container" id="screen-container"></main>
+
+    <nav class="tab-bar hidden" id="tab-bar"></nav>
+
+    <button class="fab" id="fab" aria-label="Submit price">+</button>
+
+    <div id="toast"></div>
+
+    <div class="overlay" id="overlay">
+      <div class="bottom-sheet" id="sheet-content"></div>
+    </div>
+  </div>
+
+  <script src="js/screens.js"></script>
+  <script>
+    document.getElementById('back-btn').innerHTML = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 18l-6-6 6-6"/></svg>';
+  </script>
+  <script src="js/app.js"></script>
+</body>
+</html>

@@ -1,0 +1,13 @@
+appId: ng.lmi.app
+---
+- launchApp:
+    clearState: true
+- tapOn: "Create account"
+- tapOn: "Email"
+- tapOn: "Email"
+- inputText: "maestro-${MAESTRO_RUN_ID}@example.com"
+- tapOn: "Password"
+- inputText: "Password123!"
+- tapOn: "Create account"
+- assertVisible:
+    text: "Choose your role|Welcome|Home"

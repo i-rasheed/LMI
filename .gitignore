@@ -1,0 +1,47 @@
+# Dependencies
+node_modules/
+
+# Build outputs
+dist/
+*.tsbuildinfo
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# Expo
+.expo/
+apps/mobile/.expo/
+apps/mobile/ios/
+apps/mobile/android/
+
+# NestJS
+apps/api/dist/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.idea/
+.vscode/
+*.swp
+
+# Logs
+*.log
+npm-debug.log*
+pnpm-debug.log*
+
+# Test
+coverage/
+
+# Supabase local
+supabase/.branches/
+supabase/.temp/
+
+# Turbo
+.turbo/
+
+# Misc
+*.pem

@@ -1,0 +1,8 @@
+appId: ng.lmi.app
+---
+- launchApp
+- tapOn: "Search"
+- tapOn: "Search products and markets|Find product and market dem"
+- inputText: "tomatoes"
+- assertVisible:
+    text: "Tomatoes|No results"

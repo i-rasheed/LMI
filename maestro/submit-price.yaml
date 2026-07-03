@@ -1,0 +1,24 @@
+appId: ng.lmi.app
+---
+- launchApp
+- tapOn: "Submit price"
+- assertVisible:
+    text: "Submission guidelines|Select market|Market"
+- tapOn:
+    text: "I understand|Continue"
+    optional: true
+- tapOn:
+    text: "Mile 12 Market|Balogun Market|Oyingbo Market"
+    optional: true
+- tapOn:
+    text: "Tomatoes|Rice|Pepper"
+    optional: true
+- tapOn:
+    text: "0"
+    optional: true
+- inputText: "1200"
+- tapOn:
+    text: "Continue"
+    optional: true
+- assertVisible:
+    text: "Confirm & submit|Price submitted"
