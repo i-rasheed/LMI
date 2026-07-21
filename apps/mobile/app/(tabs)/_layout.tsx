@@ -1,7 +1,6 @@
 import { UserRole } from '@lmi/shared';
 import { useQuery } from '@tanstack/react-query';
-import { Redirect, Tabs, router } from 'expo-router';
-import { Pressable, StyleSheet, View } from 'react-native';
+import { Redirect, Tabs } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { queryKeys } from '../../src/lib/query-keys';
@@ -19,28 +18,6 @@ function resolveTabVariant(role: UserRole | null): TabVariant {
     return 'admin';
   }
   return 'shopper';
-}
-
-function ReporterFab() {
-  const guidelinesAcceptedAt = useAuthStore(
-    (state) => state.profile?.guidelinesAcceptedAt,
-  );
-
-  return (
-    <Pressable
-      style={styles.fab}
-      accessibilityLabel="Submit price"
-      onPress={() => {
-        if (!guidelinesAcceptedAt) {
-          router.push('/submit/guidelines');
-          return;
-        }
-        router.push('/submit');
-      }}
-    >
-      <Ionicons name="add" size={28} color={colors.neutral[0]} />
-    </Pressable>
-  );
 }
 
 export default function TabsLayout() {
@@ -140,8 +117,7 @@ export default function TabsLayout() {
   }
 
   return (
-    <View style={styles.container}>
-      <Tabs screenOptions={screenOptions}>
+    <Tabs screenOptions={screenOptions}>
         <Tabs.Screen
           name="home"
           options={{
@@ -213,30 +189,6 @@ export default function TabsLayout() {
               : { href: null }
           }
         />
-      </Tabs>
-      {role === 'reporter' ? <ReporterFab /> : null}
-    </View>
+    </Tabs>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
-  fab: {
-    position: 'absolute',
-    alignSelf: 'center',
-    bottom: 72,
-    width: 56,
-    height: 56,
-    borderRadius: 28,
-    backgroundColor: colors.green.primary,
-    alignItems: 'center',
-    justifyContent: 'center',
-    shadowColor: '#0A8F52',
-    shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.24,
-    shadowRadius: 20,
-    elevation: 6,
-  },
-});

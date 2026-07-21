@@ -1,4 +1,4 @@
-export type CompareSort = 'cheapest' | 'freshest' | 'nearest' | 'reporters';
+export type CompareSort = 'cheapest' | 'freshest' | 'nearest';
 
 export interface CompareQuery {
   sort?: CompareSort;
@@ -35,6 +35,10 @@ export interface CurrentPriceRow {
     current_badge_level: string | null;
     is_verified_reporter: boolean;
   };
+  vendor_stalls?: {
+    id: string;
+    stall_name: string;
+  } | null;
 }
 
 export interface ComparePriceItem {
@@ -59,6 +63,7 @@ export interface ComparePriceItem {
     badgeLevel: string | null;
     isVerifiedReporter: boolean;
   };
+  vendorStallName?: string | null;
 }
 
 export interface CompareProductSummary {

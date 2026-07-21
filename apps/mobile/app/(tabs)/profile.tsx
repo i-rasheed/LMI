@@ -6,11 +6,16 @@ import { queryKeys } from '../../src/lib/query-keys';
 import { fetchSubscriptionStatus } from '../../src/services/subscriptions.service';
 import { useAuthStore } from '../../src/stores/authStore';
 import { setStoredLanguage } from '../../src/i18n';
+import { formatUserRole, getUserDisplayName } from '../../src/utils/user-display';
 import { colors, radius, spacing, typography } from '../../src/theme';
 
 export default function ProfileScreen() {
   const role = useAuthStore((state) => state.role);
+  const profile = useAuthStore((state) => state.profile);
+  const user = useAuthStore((state) => state.user);
   const signOut = useAuthStore((state) => state.signOut);
+  const displayName = getUserDisplayName(profile, user);
+  const needsName = !displayName;
   const { i18n } = useTranslation();
   const isPidgin = i18n.language === 'pcm';
   const subscriptionQuery = useQuery({
@@ -21,10 +26,19 @@ export default function ProfileScreen() {
   return (
     <View style={styles.container}>
       <View style={styles.card}>
-        <Text style={styles.title}>Profile</Text>
-        <Text style={styles.subtitle}>
-          Signed in · role: {role ?? 'shopper'} — full profile in M05
-        </Text>
+        <Text style={styles.name}>{displayName ?? 'Add your name'}</Text>
+        <Text style={styles.subtitle}>Signed in as {formatUserRole(role)}</Text>
+        {needsName ? (
+          <Text style={styles.nameHint}>Add your name so it shows instead of your email.</Text>
+        ) : null}
+        <Pressable
+          style={styles.editNameButton}
+          onPress={() => router.push('/profile/edit-name')}
+        >
+          <Text style={styles.editNameText}>
+            {needsName ? 'Add your name' : 'Edit name'}
+          </Text>
+        </Pressable>
         <Text style={styles.premiumStatus}>
           {subscriptionQuery.data?.isPremium ? 'LMI Premium active' : 'Free plan'}
         </Text>
@@ -54,20 +68,6 @@ export default function ProfileScreen() {
         />
       </View>
       <Pressable
-        style={styles.menuButton}
-        onPress={() => router.push('/reporters/leaderboard')}
-      >
-        <Text style={styles.menuText}>Reporter leaderboard</Text>
-      </Pressable>
-      {role === 'reporter' ? (
-        <Pressable
-          style={styles.menuButton}
-          onPress={() => router.push('/reporters/history')}
-        >
-          <Text style={styles.menuText}>Submission history</Text>
-        </Pressable>
-      ) : null}
-      <Pressable
         style={styles.deleteButton}
         onPress={() => router.push('/profile/delete-account')}
       >
@@ -94,14 +94,28 @@ const styles = StyleSheet.create({
     borderRadius: radius.large,
     padding: spacing.lg,
   },
-  title: {
-    ...typography.h2,
+  name: {
+    ...typography.h1,
     color: colors.neutral[900],
-    marginBottom: spacing.sm,
+    marginBottom: spacing.xs,
   },
   subtitle: {
     ...typography.body,
     color: colors.neutral[600],
+  },
+  nameHint: {
+    ...typography.caption,
+    color: colors.amber.warning,
+    marginTop: spacing.sm,
+  },
+  editNameButton: {
+    marginTop: spacing.md,
+    alignSelf: 'flex-start',
+  },
+  editNameText: {
+    ...typography.body,
+    color: colors.green.primary,
+    fontWeight: '700',
   },
   premiumStatus: {
     ...typography.caption,

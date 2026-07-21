@@ -1,4 +1,5 @@
 import { Pressable, ScrollView, StyleSheet, Text } from 'react-native';
+import { getProductCategoryLabel } from '@lmi/shared';
 import { ProductListItem } from '../../types/catalogue';
 import { colors, radius, spacing, typography } from '../../theme';
 
@@ -44,7 +45,7 @@ export function ProductChipRow({ products, onProductPress }: ProductChipRowProps
 }
 
 export function formatCategory(category: string): string {
-  return category.charAt(0).toUpperCase() + category.slice(1);
+  return getProductCategoryLabel(category);
 }
 
 const styles = StyleSheet.create({

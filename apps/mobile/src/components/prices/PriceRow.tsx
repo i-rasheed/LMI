@@ -1,17 +1,15 @@
-import { Ionicons } from '@expo/vector-icons';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { ComparePriceItem } from '../../types/prices';
 import { getFreshness } from '../../utils/freshness';
 import { formatPriceUnit } from '../../utils/formatPrice';
 import { colors, radius, spacing, typography } from '../../theme';
 import { FreshnessBadge } from './FreshnessBadge';
-import { ReporterBadge } from './ReporterBadge';
+import { SubmitterLabel } from './SubmitterLabel';
 
 interface PriceRowProps {
   price: ComparePriceItem;
   onPress: () => void;
   onFlagPress?: () => void;
-  onReporterPress?: () => void;
   showUnderReview?: boolean;
 }
 
@@ -19,7 +17,6 @@ export function PriceRow({
   price,
   onPress,
   onFlagPress,
-  onReporterPress,
   showUnderReview = false,
 }: PriceRowProps) {
   const freshness = getFreshness(price.submittedAt);
@@ -45,11 +42,7 @@ export function PriceRow({
               hitSlop={8}
               accessibilityLabel="Report price"
             >
-              <Ionicons
-                name="ellipsis-horizontal"
-                size={18}
-                color={colors.neutral[400]}
-              />
+              <Text style={styles.flagAction}>Report</Text>
             </Pressable>
           ) : null}
         </View>
@@ -60,13 +53,10 @@ export function PriceRow({
           <Text style={styles.reviewBadge}>Under review</Text>
         ) : null}
       </View>
-      <Pressable onPress={onReporterPress} disabled={!onReporterPress}>
-        <ReporterBadge
-          displayName={price.submitter.displayName}
-          badgeLevel={price.submitter.badgeLevel}
-          isVerified={price.submitter.isVerifiedReporter}
-        />
-      </Pressable>
+      <SubmitterLabel
+        displayName={price.vendorStallName || price.submitter.displayName}
+        source={price.source}
+      />
     </Pressable>
   );
 }
@@ -113,5 +103,10 @@ const styles = StyleSheet.create({
     ...typography.body,
     color: colors.neutral[900],
     fontWeight: '700',
+  },
+  flagAction: {
+    ...typography.caption,
+    color: colors.neutral[400],
+    fontWeight: '600',
   },
 });

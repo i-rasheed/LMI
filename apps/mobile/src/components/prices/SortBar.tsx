@@ -6,7 +6,6 @@ const SORT_OPTIONS: Array<{ value: CompareSort; label: string }> = [
   { value: 'cheapest', label: 'Cheapest' },
   { value: 'nearest', label: 'Nearest' },
   { value: 'freshest', label: 'Freshest' },
-  { value: 'reporters', label: 'Top reporters' },
 ];
 
 interface SortBarProps {

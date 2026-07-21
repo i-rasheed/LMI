@@ -8,6 +8,7 @@ describe('registerSchema', () => {
   it('accepts valid email registration', () => {
     const result = registerSchema.safeParse({
       method: 'email',
+      displayName: 'Amaka Okafor',
       email: 'amaka@example.com',
       password: 'password1',
       isOver16: true,
@@ -18,6 +19,7 @@ describe('registerSchema', () => {
   it('accepts valid phone registration', () => {
     const result = registerSchema.safeParse({
       method: 'phone',
+      displayName: 'Chukwuemeka',
       phone: '08012345678',
       isOver16: true,
     });
@@ -27,6 +29,7 @@ describe('registerSchema', () => {
   it('rejects registration when under 16', () => {
     const result = registerSchema.safeParse({
       method: 'email',
+      displayName: 'Amaka Okafor',
       email: 'amaka@example.com',
       password: 'password1',
       isOver16: false,
@@ -37,6 +40,7 @@ describe('registerSchema', () => {
   it('rejects weak password without a number', () => {
     const result = registerSchema.safeParse({
       method: 'email',
+      displayName: 'Amaka Okafor',
       email: 'amaka@example.com',
       password: 'password',
       isOver16: true,
@@ -47,7 +51,18 @@ describe('registerSchema', () => {
   it('rejects invalid email', () => {
     const result = registerSchema.safeParse({
       method: 'email',
+      displayName: 'Amaka Okafor',
       email: 'not-an-email',
+      password: 'password1',
+      isOver16: true,
+    });
+    expect(result.success).toBe(false);
+  });
+
+  it('rejects missing display name', () => {
+    const result = registerSchema.safeParse({
+      method: 'email',
+      email: 'amaka@example.com',
       password: 'password1',
       isOver16: true,
     });

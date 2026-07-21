@@ -240,7 +240,17 @@ export class VendorsService {
     input: VendorProductInput,
   ): Promise<VendorProductResult> {
     const stall = await this.requireApprovedStall(userId);
-    await this.productsService.getProductById(input.productId);
+    const productId = input.productId
+      ? input.productId
+      : (
+          await this.productsService.findOrCreateByName(
+            input.productName!,
+            input.category ?? 'other',
+            input.unit,
+          )
+        ).id;
+
+    await this.productsService.getProductById(productId);
 
     const status = input.isAvailableToday ? 'live' : 'removed';
     const photoUrl = input.photoUrl?.trim() ? input.photoUrl.trim() : null;
@@ -248,7 +258,7 @@ export class VendorsService {
     const { data, error } = await this.supabase.db
       .from('price_submissions')
       .insert({
-        product_id: input.productId,
+        product_id: productId,
         market_id: stall.market_id,
         submitter_id: userId,
         source: 'vendor',

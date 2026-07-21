@@ -95,7 +95,7 @@ export default function AdminFlagQueueScreen() {
                 {formatPriceUnit(item.priceNaira, item.unit)}
               </Text>
               <Text style={styles.meta}>
-                Reporter: {item.reporter.displayName}
+                Submitter: {item.reporter.displayName}
               </Text>
             </Pressable>
           ))}

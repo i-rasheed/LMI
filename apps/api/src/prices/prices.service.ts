@@ -28,13 +28,6 @@ import {
   SubmitPriceInput,
 } from './prices.types';
 
-const BADGE_RANK: Record<string, number> = {
-  elite: 4,
-  gold: 3,
-  silver: 2,
-  bronze: 1,
-};
-
 const VISIBLE_STATUSES = ['live', 'flagged', 'under_review'];
 
 function haversineKm(
@@ -57,6 +50,16 @@ function haversineKm(
 function mapRow(row: CurrentPriceRow, distanceKm?: number): ComparePriceItem {
   const market = Array.isArray(row.markets) ? row.markets[0] : row.markets;
   const profile = Array.isArray(row.profiles) ? row.profiles[0] : row.profiles;
+  const stall = Array.isArray(row.vendor_stalls)
+    ? row.vendor_stalls[0]
+    : row.vendor_stalls;
+
+  const stallName = stall?.stall_name?.trim() || null;
+  const profileName = profile.display_name?.trim() || null;
+  const displayName =
+    row.source === 'vendor'
+      ? stallName || profileName || 'Vendor'
+      : profileName || 'Community';
 
   return {
     id: row.id,
@@ -75,9 +78,10 @@ function mapRow(row: CurrentPriceRow, distanceKm?: number): ComparePriceItem {
     source: row.source,
     status: row.status,
     vendorStallId: row.vendor_stall_id,
+    vendorStallName: stallName,
     submitter: {
       id: profile.id,
-      displayName: profile.display_name?.trim() || 'Reporter',
+      displayName,
       badgeLevel: profile.current_badge_level,
       isVerifiedReporter: profile.is_verified_reporter,
     },
@@ -125,6 +129,10 @@ export class PricesService {
           display_name,
           current_badge_level,
           is_verified_reporter
+        ),
+        vendor_stalls (
+          id,
+          stall_name
         )
       `,
       )
@@ -218,14 +226,6 @@ export class PricesService {
           if (a.distanceKm == null) return 1;
           if (b.distanceKm == null) return -1;
           return a.distanceKm - b.distanceKm;
-        });
-        break;
-      case 'reporters':
-        sorted.sort((a, b) => {
-          const rankA = BADGE_RANK[a.submitter.badgeLevel ?? ''] ?? 0;
-          const rankB = BADGE_RANK[b.submitter.badgeLevel ?? ''] ?? 0;
-          if (rankB !== rankA) return rankB - rankA;
-          return a.priceNaira - b.priceNaira;
         });
         break;
       case 'cheapest':

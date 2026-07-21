@@ -18,6 +18,7 @@ import {
 } from '../../src/services/oauth.service';
 import { syncProfileToStore } from '../../src/services/profile-sync';
 import { colors, typography } from '../../src/theme';
+import { getProfileLoadError } from '../../src/utils/auth-errors';
 import { normalizeNigerianPhone } from '../../src/utils/phone';
 
 type LoginForm = {
@@ -63,7 +64,7 @@ export default function LoginScreen() {
       return;
     }
 
-    const { error } = await supabase.auth.signInWithPassword({
+    const { data, error } = await supabase.auth.signInWithPassword({
       email: values.identifier,
       password: values.password ?? '',
     });
@@ -73,12 +74,20 @@ export default function LoginScreen() {
       return;
     }
 
+    const accessToken = data.session?.access_token;
+    if (!accessToken) {
+      setError('root', {
+        message: 'Sign-in succeeded but no session was returned. Try again.',
+      });
+      return;
+    }
+
     try {
-      const profile = await fetchMe();
+      const profile = await fetchMe(accessToken);
       syncProfileToStore(profile);
       router.replace(getPostAuthRoute(profile));
-    } catch {
-      setError('root', { message: 'Could not load your profile. Try again.' });
+    } catch (profileError) {
+      setError('root', { message: getProfileLoadError(profileError) });
     }
   });
 

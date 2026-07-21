@@ -1,6 +1,7 @@
 import 'react-native-gesture-handler';
 import Constants from 'expo-constants';
 import { Stack, router, usePathname } from 'expo-router';
+import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
 import { useEffect } from 'react';
 import { LogBox } from 'react-native';
@@ -17,6 +18,8 @@ import { fetchAppConfig } from '../src/services/app-config.service';
 import { useAuthStore } from '../src/stores/authStore';
 import { colors } from '../src/theme';
 import { compareVersions } from '../src/utils/version';
+
+void SplashScreen.preventAutoHideAsync();
 
 function RootNavigator() {
   useAuthInitialization();
@@ -50,6 +53,12 @@ function RootNavigator() {
     }
   }, [configQuery.data, pathname]);
 
+  useEffect(() => {
+    if (isInitialized && !isLoading) {
+      void SplashScreen.hideAsync();
+    }
+  }, [isInitialized, isLoading]);
+
   if (!isInitialized || isLoading) {
     return <LoadingScreen />;
   }
@@ -63,17 +72,14 @@ function RootNavigator() {
         <Stack.Screen name="(tabs)" />
         <Stack.Screen name="product/[id]" />
         <Stack.Screen name="market/[id]" />
-        <Stack.Screen name="submit" options={{ presentation: 'modal' }} />
         <Stack.Screen name="admin" />
         <Stack.Screen name="vendor" />
         <Stack.Screen name="premium/upgrade" />
         <Stack.Screen name="list/result" />
         <Stack.Screen name="profile/favourites" />
+        <Stack.Screen name="profile/edit-name" />
         <Stack.Screen name="profile/subscription" />
         <Stack.Screen name="profile/delete-account" />
-        <Stack.Screen name="reporters/leaderboard" />
-        <Stack.Screen name="reporters/history" />
-        <Stack.Screen name="reporters/[id]" />
         <Stack.Screen name="blocked" />
         <Stack.Screen name="maintenance" />
         <Stack.Screen name="force-update" />

@@ -18,6 +18,7 @@ import { FilterSheet } from '../../src/components/prices/FilterSheet';
 import { FlagPriceSheet } from '../../src/components/prices/FlagPriceSheet';
 import { PremiumHistoryLock } from '../../src/components/prices/PremiumHistoryLock';
 import { PriceHistoryChart } from '../../src/components/prices/PriceHistoryChart';
+import { PriceInsightTeaser } from '../../src/components/prices/PriceInsightTeaser';
 import { PriceRow } from '../../src/components/prices/PriceRow';
 import { ProductCompareFooter } from '../../src/components/prices/ProductCompareFooter';
 import { SortBar } from '../../src/components/prices/SortBar';
@@ -32,7 +33,7 @@ import { usePriceCompare } from '../../src/hooks/usePriceCompare';
 import { ApiError } from '../../src/lib/api';
 import { queryKeys } from '../../src/lib/query-keys';
 import { createAlert, fetchAlerts } from '../../src/services/alerts.service';
-import { fetchPriceHistory } from '../../src/services/prices.service';
+import { fetchMarketAverage, fetchPriceHistory } from '../../src/services/prices.service';
 import { recordVendorAnalyticsEvent } from '../../src/services/vendors.service';
 import {
   addFavourite,
@@ -51,13 +52,13 @@ import {
   ComparePriceItem,
   CompareSort,
 } from '../../src/types/prices';
+import { getPriceInsight } from '../../src/utils/price-insight';
 import { colors, spacing, typography } from '../../src/theme';
 
 export default function ProductDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const insets = useSafeAreaInsets();
   const queryClient = useQueryClient();
-  const role = useAuthStore((state) => state.role);
   const isPremium = useAuthStore((state) => state.profile?.isPremium ?? false);
   const session = useAuthStore((state) => state.session);
   const { isOffline } = useNetworkStatus();
@@ -100,6 +101,40 @@ export default function ProductDetailScreen() {
     queryFn: () => fetchPriceHistory(id),
     enabled: Boolean(session && isPremium),
   });
+
+  const cheapestPrice = useMemo(() => {
+    const prices = compareQuery.data?.prices ?? [];
+    if (prices.length === 0) {
+      return null;
+    }
+    return [...prices].sort((a, b) => a.priceNaira - b.priceNaira)[0] ?? null;
+  }, [compareQuery.data?.prices]);
+
+  const averageQuery = useQuery({
+    queryKey: queryKeys.prices.marketAverage(
+      id,
+      cheapestPrice?.marketId ?? '',
+      cheapestPrice?.unit ?? '',
+    ),
+    queryFn: () =>
+      fetchMarketAverage({
+        productId: id,
+        marketId: cheapestPrice!.marketId,
+        unit: cheapestPrice!.unit,
+      }),
+    enabled: Boolean(session && !isPremium && cheapestPrice),
+  });
+
+  const priceInsight = useMemo(() => {
+    if (isPremium || !cheapestPrice || !averageQuery.data) {
+      return null;
+    }
+    return getPriceInsight(
+      cheapestPrice.priceNaira,
+      averageQuery.data.averageNaira,
+      averageQuery.data.sampleCount,
+    );
+  }, [averageQuery.data, cheapestPrice, isPremium]);
 
   const favourite = favouritesQuery.data?.find(
     (item) => item.productId === id,
@@ -211,7 +246,15 @@ export default function ProductDetailScreen() {
         {isPremium ? (
           <PriceHistoryChart points={historyQuery.data?.points ?? []} />
         ) : (
-          <PremiumHistoryLock onPress={() => router.push('/premium/upgrade')} />
+          <>
+            {priceInsight ? (
+              <PriceInsightTeaser
+                insight={priceInsight}
+                onPress={() => router.push('/premium/upgrade')}
+              />
+            ) : null}
+            <PremiumHistoryLock onPress={() => router.push('/premium/upgrade')} />
+          </>
         )}
         <View style={styles.toolbar}>
           <SortBar value={sort} onChange={setSort} />
@@ -228,7 +271,15 @@ export default function ProductDetailScreen() {
         </View>
       </View>
     );
-  }, [compareQuery.data?.product, filters, historyQuery.data?.points, isPremium, sort]);
+  }, [
+    averageQuery.data,
+    compareQuery.data?.product,
+    filters,
+    historyQuery.data?.points,
+    isPremium,
+    priceInsight,
+    sort,
+  ]);
 
   function openPriceMarket(item: ComparePriceItem) {
     if (item.vendorStallId) {
@@ -269,7 +320,6 @@ export default function ProductDetailScreen() {
               <PriceRow
                 price={item}
                 onPress={() => openPriceMarket(item)}
-                onReporterPress={() => router.push(`/reporters/${item.submitter.id}`)}
                 onFlagPress={
                   session
                     ? () => setFlagTarget(item)
@@ -290,12 +340,10 @@ export default function ProductDetailScreen() {
               <EmptyState
                 headline="No prices yet for this product"
                 body="Be the first to know when prices are added."
-                ctaLabel={
-                  role === 'reporter' ? 'Submit a price' : 'Set alert for first price'
-                }
+                ctaLabel="Set alert for first price"
                 onCtaPress={() =>
                   Alert.alert(
-                    role === 'reporter' ? 'Submit price' : 'Set alert',
+                    'Set alert',
                     'Coming in a later milestone.',
                   )
                 }

@@ -1,4 +1,4 @@
-export type CompareSort = 'cheapest' | 'freshest' | 'nearest' | 'reporters';
+export type CompareSort = 'cheapest' | 'freshest' | 'nearest';
 
 export interface CompareFilters {
   area?: string;
@@ -22,6 +22,7 @@ export interface ComparePriceItem {
   source: string;
   status: string;
   vendorStallId: string | null;
+  vendorStallName?: string | null;
   submitter: {
     id: string;
     displayName: string;

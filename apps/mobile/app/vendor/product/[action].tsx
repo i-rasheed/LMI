@@ -1,7 +1,7 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useQuery } from '@tanstack/react-query';
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import { Pressable, ScrollView, StyleSheet, Switch, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -9,16 +9,12 @@ import { vendorProductSchema, priceUnitSchema } from '@lmi/shared';
 import { z } from 'zod';
 import { FormField } from '../../../src/components/auth/FormField';
 import { PrimaryButton } from '../../../src/components/auth/PrimaryButton';
-import { ProductResultRow } from '../../../src/components/catalogue/ProductResultRow';
-import { SearchBar } from '../../../src/components/catalogue/SearchBar';
-import { useProductSearch } from '../../../src/hooks/useProductSearch';
 import { queryKeys } from '../../../src/lib/query-keys';
 import {
   addVendorProduct,
   fetchVendorProducts,
   updateVendorProduct,
 } from '../../../src/services/vendors.service';
-import { ProductListItem } from '../../../src/types/catalogue';
 import { colors, radius, spacing, typography } from '../../../src/theme';
 
 const formSchema = vendorProductSchema;
@@ -30,10 +26,6 @@ export default function VendorProductFormScreen() {
   const insets = useSafeAreaInsets();
   const { id } = useLocalSearchParams<{ id?: string }>();
   const isEdit = Boolean(id);
-  const [query, setQuery] = useState('');
-  const [selectedProduct, setSelectedProduct] = useState<ProductListItem | null>(
-    null,
-  );
   const [rootError, setRootError] = useState<string | null>(null);
 
   const productsQuery = useQuery({
@@ -47,23 +39,32 @@ export default function VendorProductFormScreen() {
     [productsQuery.data, id],
   );
 
-  const searchQuery = useProductSearch(query);
-
   const {
     control,
     handleSubmit,
-    setValue,
+    reset,
     formState: { errors, isSubmitting },
   } = useForm<VendorProductForm>({
     resolver: zodResolver(formSchema),
-    values: {
-      productId: existing?.productId ?? selectedProduct?.id ?? '',
-      priceNaira: existing?.priceNaira ?? 0,
-      unit: (existing?.unit as VendorProductForm['unit']) ?? 'kg',
-      isAvailableToday: existing?.isAvailableToday ?? true,
-      photoUrl: existing?.photoUrl ?? '',
+    defaultValues: {
+      productName: '',
+      priceNaira: 0,
+      unit: 'kg',
+      isAvailableToday: true,
+      photoUrl: '',
     },
   });
+
+  useEffect(() => {
+    if (existing) {
+      reset({
+        priceNaira: existing.priceNaira,
+        unit: existing.unit as VendorProductForm['unit'],
+        isAvailableToday: existing.isAvailableToday,
+        photoUrl: existing.photoUrl ?? '',
+      });
+    }
+  }, [existing, reset]);
 
   const onSubmit = handleSubmit(async (values) => {
     setRootError(null);
@@ -76,7 +77,13 @@ export default function VendorProductFormScreen() {
           photoUrl: values.photoUrl,
         });
       } else {
-        await addVendorProduct(values);
+        await addVendorProduct({
+          productName: values.productName?.trim(),
+          priceNaira: values.priceNaira,
+          unit: values.unit,
+          isAvailableToday: values.isAvailableToday,
+          ...(values.photoUrl ? { photoUrl: values.photoUrl } : {}),
+        });
       }
       router.replace('/(tabs)/vendor/products');
     } catch (error) {
@@ -85,12 +92,6 @@ export default function VendorProductFormScreen() {
       );
     }
   });
-
-  function selectProduct(product: ProductListItem) {
-    setSelectedProduct(product);
-    setValue('productId', product.id, { shouldValidate: true });
-    setQuery('');
-  }
 
   return (
     <ScrollView
@@ -103,31 +104,20 @@ export default function VendorProductFormScreen() {
       <Text style={styles.title}>{isEdit ? 'Edit product' : 'Add product'}</Text>
 
       {!isEdit ? (
-        <>
-          <SearchBar
-            value={query}
-            onChangeText={setQuery}
-            placeholder="Search catalogue"
-          />
-          {selectedProduct ? (
-            <View style={styles.selectedCard}>
-              <Text style={styles.selectedLabel}>Selected product</Text>
-              <Text style={styles.selectedName}>{selectedProduct.name}</Text>
-            </View>
-          ) : null}
-          {query.trim().length >= 2
-            ? (searchQuery.data ?? []).slice(0, 8).map((product) => (
-                <ProductResultRow
-                  key={product.id}
-                  product={product}
-                  onPress={() => selectProduct(product)}
-                />
-              ))
-            : null}
-          {errors.productId?.message ? (
-            <Text style={styles.error}>{errors.productId.message}</Text>
-          ) : null}
-        </>
+        <Controller
+          control={control}
+          name="productName"
+          render={({ field: { onChange, onBlur, value } }) => (
+            <FormField
+              label="Product name"
+              placeholder="e.g. Tomatoes, Smoked fish, Rice"
+              value={value ?? ''}
+              onChangeText={onChange}
+              onBlur={onBlur}
+              error={errors.productName?.message}
+            />
+          )}
+        />
       ) : (
         <View style={styles.selectedCard}>
           <Text style={styles.selectedLabel}>Product</Text>

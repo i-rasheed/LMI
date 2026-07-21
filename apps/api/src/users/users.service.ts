@@ -3,7 +3,7 @@ import {
   ForbiddenException,
   Injectable,
 } from '@nestjs/common';
-import { DeleteAccountInput, SignupRole } from '@lmi/shared';
+import { DeleteAccountInput, SignupRole, UpdateProfileInput } from '@lmi/shared';
 import { SupabaseService } from '../supabase/supabase.service';
 import {
   AuthUser,
@@ -37,6 +37,31 @@ export class UsersService {
       .update({
         role,
         role_selected_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      })
+      .eq('id', authUser.id)
+      .select('*')
+      .single();
+
+    if (error) {
+      throw error;
+    }
+
+    const isPremium = await this.hasActivePremium(authUser.id);
+    return toProfileResponse(data as ProfileRow, isPremium);
+  }
+
+  async updateProfile(
+    authUser: AuthUser,
+    input: UpdateProfileInput,
+  ): Promise<ProfileResponse> {
+    await this.assertAccountMutable(authUser.id);
+    await this.getOrCreateProfile(authUser);
+
+    const { data, error } = await this.supabase.db
+      .from('profiles')
+      .update({
+        display_name: input.displayName.trim(),
         updated_at: new Date().toISOString(),
       })
       .eq('id', authUser.id)
@@ -238,9 +263,17 @@ export class UsersService {
   }
 
   private resolveDisplayName(authUser: AuthUser): string {
-    const metadataName = authUser.userMetadata?.display_name;
-    if (typeof metadataName === 'string' && metadataName.trim()) {
-      return metadataName.trim();
+    const metadata = authUser.userMetadata ?? {};
+    const candidates = [
+      metadata.display_name,
+      metadata.full_name,
+      metadata.name,
+    ];
+
+    for (const candidate of candidates) {
+      if (typeof candidate === 'string' && candidate.trim()) {
+        return candidate.trim();
+      }
     }
 
     if (authUser.email) {

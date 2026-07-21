@@ -4,22 +4,18 @@ import {
   Get,
   Param,
   ParseUUIDPipe,
-  Patch,
   Post,
   Query,
   UseGuards,
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import {
-  submitPriceSchema,
   flagPriceBodySchema,
   type FlagPriceBodyInput,
-  type SubmitPriceInput,
 } from '@lmi/shared';
 import { ZodValidationPipe } from 'nestjs-zod';
 import { AuthGuard } from '../common/guards/auth.guard';
 import { ActiveAccountGuard } from '../common/guards/active-account.guard';
-import { ReporterRoleGuard } from '../common/guards/reporter-role.guard';
 import { CurrentUser } from '../common/decorators/current-user.decorator';
 import { AuthUser } from '../users/users.types';
 import {
@@ -50,16 +46,6 @@ export class PricesController {
     );
   }
 
-  @Post()
-  @ApiOperation({ summary: 'Submit a new price (reporter)' })
-  @UseGuards(ReporterRoleGuard)
-  submit(
-    @CurrentUser() user: AuthUser,
-    @Body(new ZodValidationPipe(submitPriceSchema)) body: SubmitPriceInput,
-  ) {
-    return this.pricesService.submitPrice(user.id, body);
-  }
-
   @Post(':submissionId/flag')
   @ApiOperation({ summary: 'Flag an incorrect price' })
   flag(
@@ -68,17 +54,6 @@ export class PricesController {
     @Body(new ZodValidationPipe(flagPriceBodySchema)) body: FlagPriceBodyInput,
   ) {
     return this.pricesService.flagSubmission(user.id, submissionId, body);
-  }
-
-  @Patch(':submissionId')
-  @ApiOperation({ summary: 'Update an existing price submission' })
-  @UseGuards(ReporterRoleGuard)
-  update(
-    @CurrentUser() user: AuthUser,
-    @Param('submissionId', ParseUUIDPipe) submissionId: string,
-    @Body(new ZodValidationPipe(submitPriceSchema)) body: SubmitPriceInput,
-  ) {
-    return this.pricesService.updatePrice(user.id, submissionId, body);
   }
 
   @Get(':productId/compare')

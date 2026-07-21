@@ -19,3 +19,5 @@ export const DUPLICATE_SUBMISSION_MINUTES = 30;
 export const OUTLIER_DEVIATION_PERCENT = 50;
 
 export const FLAG_ESCALATION_COUNT = 3;
+
+export * from './product-categories';

@@ -10,6 +10,7 @@ interface SearchBarProps {
   autoFocus?: boolean;
   showSpinner?: boolean;
   placeholder?: string;
+  edgeToEdge?: boolean;
 }
 
 export function SearchBar({
@@ -20,10 +21,11 @@ export function SearchBar({
   autoFocus = false,
   showSpinner = false,
   placeholder = 'Search products and markets',
+  edgeToEdge = false,
 }: SearchBarProps) {
   if (!editable) {
     return (
-      <Pressable onPress={onPress} style={styles.wrapper}>
+      <Pressable onPress={onPress} style={[styles.wrapper, edgeToEdge && styles.edgeToEdge]}>
         <View style={styles.container}>
           <Ionicons name="search-outline" size={20} color={colors.neutral[400]} />
           <Text style={styles.placeholderText} numberOfLines={1}>
@@ -35,7 +37,7 @@ export function SearchBar({
   }
 
   return (
-    <View style={styles.wrapper}>
+    <View style={[styles.wrapper, edgeToEdge && styles.edgeToEdge]}>
       <View style={styles.container}>
         <Ionicons name="search-outline" size={20} color={colors.neutral[400]} />
         <TextInput
@@ -60,6 +62,9 @@ export function SearchBar({
 const styles = StyleSheet.create({
   wrapper: {
     paddingHorizontal: spacing.screenHorizontal,
+  },
+  edgeToEdge: {
+    paddingHorizontal: 0,
   },
   container: {
     flexDirection: 'row',

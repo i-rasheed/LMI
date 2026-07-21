@@ -18,10 +18,16 @@ import {
   fetchClaimStatus,
   fetchVendorDashboard,
 } from '../../../src/services/vendors.service';
+import { useAuthStore } from '../../../src/stores/authStore';
+import { getUserDisplayName } from '../../../src/utils/user-display';
 import { colors, radius, spacing, typography } from '../../../src/theme';
 
 export default function VendorDashboardScreen() {
   const insets = useSafeAreaInsets();
+  const profile = useAuthStore((state) => state.profile);
+  const user = useAuthStore((state) => state.user);
+  const displayName = getUserDisplayName(profile, user);
+  const greeting = displayName ? `Hello, ${displayName}` : 'Hello';
 
   const claimQuery = useQuery({
     queryKey: queryKeys.vendor.claimStatus,
@@ -61,6 +67,7 @@ export default function VendorDashboardScreen() {
         />
       }
     >
+      <Text style={styles.greeting}>{greeting}</Text>
       <Text style={styles.title}>Vendor dashboard</Text>
 
       {claimQuery.isLoading || dashboardQuery.isLoading ? (
@@ -149,6 +156,10 @@ const styles = StyleSheet.create({
   content: {
     paddingHorizontal: spacing.screenHorizontal,
     gap: spacing.md,
+  },
+  greeting: {
+    ...typography.body,
+    color: colors.neutral[600],
   },
   title: {
     ...typography.h1,
