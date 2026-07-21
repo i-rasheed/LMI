@@ -1,6 +1,6 @@
-import { Body, Controller, Get, Param, ParseUUIDPipe, Post, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Param, ParseUUIDPipe, Patch, Post, UseGuards } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
-import { deleteAccountSchema, roleSelectSchema } from '@lmi/shared';
+import { deleteAccountSchema, roleSelectSchema, updateProfileSchema } from '@lmi/shared';
 import { createZodDto, ZodValidationPipe } from 'nestjs-zod';
 import { AuthGuard } from '../common/guards/auth.guard';
 import { CurrentUser } from '../common/decorators/current-user.decorator';
@@ -9,6 +9,7 @@ import { UsersService } from './users.service';
 
 class SetRoleDto extends createZodDto(roleSelectSchema) {}
 class DeleteAccountDto extends createZodDto(deleteAccountSchema) {}
+class UpdateProfileDto extends createZodDto(updateProfileSchema) {}
 
 @ApiTags('users')
 @Controller('users')
@@ -21,6 +22,17 @@ export class UsersController {
   @UseGuards(AuthGuard)
   getMe(@CurrentUser() user: AuthUser): Promise<ProfileResponse> {
     return this.usersService.getMe(user);
+  }
+
+  @Patch('me')
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Update current user profile' })
+  @UseGuards(AuthGuard)
+  updateProfile(
+    @CurrentUser() user: AuthUser,
+    @Body(new ZodValidationPipe(updateProfileSchema)) body: UpdateProfileDto,
+  ): Promise<ProfileResponse> {
+    return this.usersService.updateProfile(user, body);
   }
 
   @Post('me/role')

@@ -5,11 +5,7 @@ import {
   CompareSort,
   PriceHistoryResponse,
 } from '../types/prices';
-import {
-  MarketAverageResponse,
-  SubmissionResponse,
-  SubmitPayload,
-} from '../types/submit';
+import { MarketAverageResponse } from '../types/submit';
 
 export function fetchPriceCompare(
   productId: string,
@@ -61,21 +57,4 @@ export function fetchMarketAverage(params: {
     unit: params.unit,
   });
   return apiRequest<MarketAverageResponse>(`/prices/average?${search.toString()}`);
-}
-
-export function submitPrice(payload: SubmitPayload): Promise<SubmissionResponse> {
-  return apiRequest<SubmissionResponse>('/prices', {
-    method: 'POST',
-    body: JSON.stringify(payload),
-  });
-}
-
-export function updatePrice(
-  submissionId: string,
-  payload: SubmitPayload,
-): Promise<SubmissionResponse> {
-  return apiRequest<SubmissionResponse>(`/prices/${submissionId}`, {
-    method: 'PATCH',
-    body: JSON.stringify(payload),
-  });
 }

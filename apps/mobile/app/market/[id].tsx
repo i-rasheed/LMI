@@ -17,7 +17,7 @@ import {
 } from '../../src/components/market/MarketHoursBadge';
 import { MarketMiniMap } from '../../src/components/market/MarketMiniMap';
 import { FreshnessBadge } from '../../src/components/prices/FreshnessBadge';
-import { ReporterBadge } from '../../src/components/prices/ReporterBadge';
+import { SubmitterLabel } from '../../src/components/prices/SubmitterLabel';
 import { SectionHeader } from '../../src/components/catalogue/SectionHeader';
 import { EmptyState } from '../../src/components/ui/EmptyState';
 import { ErrorState } from '../../src/components/ui/ErrorState';
@@ -163,10 +163,7 @@ export default function MarketDetailScreen() {
                 </Text>
               </View>
               <FreshnessBadge freshness={freshness} />
-              <ReporterBadge
-                displayName={item.submitterName}
-                badgeLevel={item.badgeLevel}
-              />
+              <SubmitterLabel displayName={item.submitterName} />
             </Pressable>
           );
         }}

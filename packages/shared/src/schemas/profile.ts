@@ -1,12 +1,14 @@
 import { z } from 'zod';
 import { languagePreferenceSchema, themePreferenceSchema } from '../types/enums';
 
+export const displayNameSchema = z
+  .string()
+  .trim()
+  .min(2, 'Enter your name')
+  .max(60, 'Name is too long');
+
 export const profileSchema = z.object({
-  displayName: z
-    .string()
-    .trim()
-    .min(2, 'Display name is required')
-    .max(60, 'Display name is too long'),
+  displayName: displayNameSchema,
   email: z.string().email('Enter a valid email address').optional(),
   bio: z
     .string()
@@ -19,4 +21,9 @@ export const profileSchema = z.object({
   avatarUrl: z.string().url().optional().or(z.literal('')),
 });
 
+export const updateProfileSchema = z.object({
+  displayName: displayNameSchema,
+});
+
 export type ProfileInput = z.infer<typeof profileSchema>;
+export type UpdateProfileInput = z.infer<typeof updateProfileSchema>;

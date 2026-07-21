@@ -17,7 +17,6 @@ import { ErrorState } from '../../../src/components/ui/ErrorState';
 import { SkeletonBox } from '../../../src/components/ui/SkeletonBox';
 import { queryKeys } from '../../../src/lib/query-keys';
 import { applyFlagAction, fetchFlagReview } from '../../../src/services/admin.service';
-import { formatBadgeLabel } from '../../../src/utils/reporter';
 import { formatPriceUnit } from '../../../src/utils/formatPrice';
 import { colors, radius, spacing, typography } from '../../../src/theme';
 
@@ -111,10 +110,9 @@ export default function AdminFlagReviewScreen() {
           </View>
 
           <View style={styles.card}>
-            <Text style={styles.sectionTitle}>Reporter</Text>
+            <Text style={styles.sectionTitle}>Submitter</Text>
             <Text style={styles.meta}>{review.reporter.displayName}</Text>
             <Text style={styles.meta}>
-              {formatBadgeLabel(review.reporter.badgeLevel) ?? 'Reporter'} ·{' '}
               {review.reporter.acceptedSubmissionCount} submissions
             </Text>
           </View>
@@ -183,25 +181,25 @@ export default function AdminFlagReviewScreen() {
               style={styles.secondaryButton}
               onPress={() =>
                 confirmAction(
-                  'Warn reporter',
-                  'Reporter will see a warning on next app open.',
+                  'Warn user',
+                  'User will see a warning on next app open.',
                   { action: 'warn' },
                 )
               }
             >
-              <Text style={styles.secondaryText}>Warn reporter</Text>
+              <Text style={styles.secondaryText}>Warn user</Text>
             </Pressable>
             <Pressable
               style={styles.dangerButton}
               onPress={() =>
                 confirmAction(
-                  'Ban reporter',
-                  'This suspends the reporter account and removes the price.',
+                  'Ban user',
+                  'This suspends the account and removes the price.',
                   { action: 'ban' },
                 )
               }
             >
-              <Text style={styles.dangerText}>Ban reporter</Text>
+              <Text style={styles.dangerText}>Ban user</Text>
             </Pressable>
           </View>
         </ScrollView>

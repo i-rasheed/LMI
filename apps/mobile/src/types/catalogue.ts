@@ -29,11 +29,4 @@ export interface ProductCategorySummary {
   productCount: number;
 }
 
-export type ProductCategory =
-  | 'vegetables'
-  | 'grains'
-  | 'protein'
-  | 'spices'
-  | 'oils'
-  | 'fruits'
-  | 'other';
+export type { ProductCategory } from '@lmi/shared';

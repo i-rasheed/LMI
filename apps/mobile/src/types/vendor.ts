@@ -100,7 +100,9 @@ export interface StallClaimPayload {
 }
 
 export interface VendorProductPayload {
-  productId: string;
+  productId?: string;
+  productName?: string;
+  category?: string;
   priceNaira: number;
   unit: string;
   isAvailableToday: boolean;

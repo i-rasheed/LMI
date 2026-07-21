@@ -3,7 +3,6 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { AppModule } from '../src/app.module';
 import { AuthGuard } from '../src/common/guards/auth.guard';
 import { ActiveAccountGuard } from '../src/common/guards/active-account.guard';
-import { ReporterRoleGuard } from '../src/common/guards/reporter-role.guard';
 import { PricesService } from '../src/prices/prices.service';
 import { initFullApp, request } from './e2e-utils';
 
@@ -72,27 +71,6 @@ const mockCompareResponse = {
 };
 
 const MARKET_ID = '22222222-2222-2222-2222-222222222222';
-const SUBMISSION_ID = '33333333-3333-3333-3333-333333333333';
-const USER_ID = '44444444-4444-4444-4444-444444444444';
-
-const mockSubmissionResponse = {
-  submissionId: 'sub-new',
-  status: 'live',
-  isAutoFlagged: false,
-  productId: PRODUCT_ID,
-  marketId: MARKET_ID,
-  priceNaira: 900,
-  unit: 'kg',
-  photoUrl: null,
-  submittedAt: new Date().toISOString(),
-  reporterStats: {
-    acceptedSubmissionCount: 42,
-    currentBadgeLevel: 'bronze',
-    nextBadgeLevel: 'silver',
-    submissionsUntilNextBadge: 8,
-    currentStreakDays: 5,
-  },
-};
 
 async function initPricesApp(): Promise<INestApplication> {
   const moduleFixture: TestingModule = await Test.createTestingModule({
@@ -108,20 +86,16 @@ async function initPricesApp(): Promise<INestApplication> {
         averageNaira: 850,
         sampleCount: 12,
       }),
-      submitPrice: jest.fn().mockResolvedValue(mockSubmissionResponse),
-      updatePrice: jest.fn().mockResolvedValue(mockSubmissionResponse),
     })
     .overrideGuard(AuthGuard)
     .useValue({
       canActivate: (context: ExecutionContext) => {
         const req = context.switchToHttp().getRequest<{ user?: { id: string } }>();
-        req.user = { id: USER_ID };
+        req.user = { id: '44444444-4444-4444-4444-444444444444' };
         return true;
       },
     })
     .overrideGuard(ActiveAccountGuard)
-    .useValue({ canActivate: () => true })
-    .overrideGuard(ReporterRoleGuard)
     .useValue({ canActivate: () => true })
     .compile();
 
@@ -183,34 +157,5 @@ describe('Prices compare (e2e)', () => {
 
     expect(response.body.averageNaira).toBe(850);
     expect(response.body.sampleCount).toBe(12);
-  });
-
-  it('accepts price submission payload', async () => {
-    const response = await request(app.getHttpServer())
-      .post('/api/v1/prices')
-      .send({
-        marketId: MARKET_ID,
-        productId: PRODUCT_ID,
-        priceNaira: 900,
-        unit: 'kg',
-      })
-      .expect(201);
-
-    expect(response.body.submissionId).toBe('sub-new');
-    expect(response.body.reporterStats.acceptedSubmissionCount).toBe(42);
-  });
-
-  it('accepts price update payload', async () => {
-    const response = await request(app.getHttpServer())
-      .patch(`/api/v1/prices/${SUBMISSION_ID}`)
-      .send({
-        marketId: MARKET_ID,
-        productId: PRODUCT_ID,
-        priceNaira: 920,
-        unit: 'kg',
-      })
-      .expect(200);
-
-    expect(response.body.priceNaira).toBe(900);
   });
 });

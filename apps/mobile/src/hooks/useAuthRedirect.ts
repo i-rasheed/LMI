@@ -41,9 +41,8 @@ export function useAuthRedirectTarget(): Href | null {
   const profile = useAuthStore((state) => state.profile);
   const isInitialized = useAuthStore((state) => state.isInitialized);
   const isLoading = useAuthStore((state) => state.isLoading);
-  const isProfileLoading = useAuthStore((state) => state.isProfileLoading);
 
-  if (!isInitialized || isLoading || (session && isProfileLoading)) {
+  if (!isInitialized || isLoading) {
     return null;
   }
 

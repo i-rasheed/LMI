@@ -28,6 +28,25 @@ function toMarketListItem(
   };
 }
 
+function haversineKm(
+  lat1: number,
+  lng1: number,
+  lat2: number,
+  lng2: number,
+): number {
+  const toRadians = (value: number) => (value * Math.PI) / 180;
+  const earthRadiusKm = 6371;
+  const dLat = toRadians(lat2 - lat1);
+  const dLng = toRadians(lng2 - lng1);
+  const a =
+    Math.sin(dLat / 2) ** 2 +
+    Math.cos(toRadians(lat1)) *
+      Math.cos(toRadians(lat2)) *
+      Math.sin(dLng / 2) ** 2;
+
+  return earthRadiusKm * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+}
+
 @Injectable()
 export class MarketsService {
   constructor(private readonly supabase: SupabaseService) {}
@@ -81,11 +100,45 @@ export class MarketsService {
       p_limit: query.limit ?? 20,
     });
 
-    if (error) {
-      throw error;
+    if (!error) {
+      return ((data as MarketRow[]) ?? []).map(toMarketListItem);
     }
 
-    return ((data as MarketRow[]) ?? []).map(toMarketListItem);
+    if (error.code === 'PGRST202') {
+      const { data: markets, error: listError } = await this.supabase.db
+        .from('markets')
+        .select(
+          'id, name, slug, area, latitude, longitude, photo_url, categories',
+        )
+        .eq('is_active', true);
+
+      if (listError) {
+        throw listError;
+      }
+
+      const radiusKm = query.radiusKm ?? 50;
+      const limit = query.limit ?? 20;
+
+      return ((markets as MarketRow[]) ?? [])
+        .map((row) => {
+          const distanceKm = haversineKm(
+            query.lat,
+            query.lng,
+            Number(row.latitude),
+            Number(row.longitude),
+          );
+
+          return {
+            ...toMarketListItem(row),
+            distanceKm: Number(distanceKm.toFixed(2)),
+          };
+        })
+        .filter((market) => (market.distanceKm ?? 0) <= radiusKm)
+        .sort((left, right) => (left.distanceKm ?? 0) - (right.distanceKm ?? 0))
+        .slice(0, limit);
+    }
+
+    throw error;
   }
 
   async getMarketById(id: string): Promise<MarketDetailResponse> {
@@ -158,6 +211,7 @@ export class MarketsService {
         price_naira,
         unit,
         submitted_at,
+        source,
         product:products!inner (
           id,
           name,
@@ -167,6 +221,9 @@ export class MarketsService {
         profiles!inner (
           display_name,
           current_badge_level
+        ),
+        vendor_stalls (
+          stall_name
         )
       `,
       )
@@ -198,6 +255,14 @@ export class MarketsService {
         | { display_name: string | null; current_badge_level: string | null }
         | Array<{ display_name: string | null; current_badge_level: string | null }>;
       const profile = Array.isArray(rawProfile) ? rawProfile[0] : rawProfile;
+      const rawStall = row.vendor_stalls as
+        | { stall_name: string | null }
+        | Array<{ stall_name: string | null }>
+        | null;
+      const stall = Array.isArray(rawStall) ? rawStall[0] : rawStall;
+      const stallName = stall?.stall_name?.trim() || null;
+      const profileName = profile.display_name?.trim() || null;
+      const source = row.source as string;
 
       return {
         productId: product.id,
@@ -207,7 +272,10 @@ export class MarketsService {
         priceNaira: row.price_naira as number,
         unit: row.unit as string,
         submittedAt: row.submitted_at as string,
-        submitterName: profile.display_name?.trim() || 'Reporter',
+        submitterName:
+          source === 'vendor'
+            ? stallName || profileName || 'Vendor'
+            : profileName || 'Community',
         badgeLevel: profile.current_badge_level,
       };
     });

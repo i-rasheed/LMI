@@ -6,15 +6,27 @@
     "orientation": "portrait",
     "scheme": "lmi",
     "userInterfaceStyle": "light",
+    "icon": "./assets/lmi-logo.png",
+    "splash": {
+      "image": "./assets/lmi-logo.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#0A8F52"
+    },
     "ios": {
       "supportsTablet": false,
-      "bundleIdentifier": "ng.lmi.app"
+      "bundleIdentifier": "ng.lmi.app",
+      "icon": "./assets/lmi-logo.png"
     },
     "android": {
       "adaptiveIcon": {
+        "foregroundImage": "./assets/lmi-logo.png",
         "backgroundColor": "#0A8F52"
       },
-      "package": "ng.lmi.app"
+      "package": "ng.lmi.app",
+      "permissions": [
+        "android.permission.ACCESS_COARSE_LOCATION",
+        "android.permission.ACCESS_FINE_LOCATION"
+      ]
     },
     "plugins": [
       "expo-router",
@@ -30,7 +42,8 @@
         "expo-build-properties",
         {
           "android": {
-            "compileSdkVersion": 36
+            "compileSdkVersion": 36,
+            "usesCleartextTraffic": true
           }
         }
       ],
@@ -41,6 +54,9 @@
       [
         "expo-splash-screen",
         {
+          "image": "./assets/lmi-logo.png",
+          "imageWidth": 180,
+          "resizeMode": "contain",
           "backgroundColor": "#0A8F52"
         }
       ],
@@ -48,6 +64,12 @@
     ],
     "experiments": {
       "typedRoutes": true
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "65c09038-8ad6-4c63-850c-a3c2135dace0"
+      }
     }
   }
 }

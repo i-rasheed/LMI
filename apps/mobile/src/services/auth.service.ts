@@ -3,8 +3,15 @@ import { apiRequest } from '../lib/api';
 import { supabase } from '../lib/supabase';
 import { ApiProfile } from '../types/profile';
 
-export function fetchMe(): Promise<ApiProfile> {
-  return apiRequest<ApiProfile>('/users/me');
+export function fetchMe(accessToken?: string): Promise<ApiProfile> {
+  return apiRequest<ApiProfile>('/users/me', {}, accessToken);
+}
+
+export function updateProfile(displayName: string): Promise<ApiProfile> {
+  return apiRequest<ApiProfile>('/users/me', {
+    method: 'PATCH',
+    body: JSON.stringify({ displayName }),
+  });
 }
 
 export function setRole(role: SignupRole): Promise<ApiProfile> {

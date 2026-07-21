@@ -1,6 +1,7 @@
 import { Link, router } from 'expo-router';
 import { useState } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { BrandLogo } from '../../src/components/BrandLogo';
 import { GoogleOAuthButton } from '../../src/components/auth/GoogleOAuthButton';
 import {
   OAuthCancelledError,
@@ -35,7 +36,7 @@ export default function WelcomeScreen() {
   return (
     <View style={styles.container}>
       <View style={styles.content}>
-        <Text style={styles.logo}>LMI</Text>
+        <BrandLogo size={96} style={styles.logo} />
         <Text style={styles.headline}>Know market prices before you go</Text>
         <Text style={styles.subhead}>
           Compare prices across Lagos markets in seconds
@@ -76,8 +77,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   logo: {
-    ...typography.display,
-    color: colors.green.primary,
     marginBottom: spacing.lg,
   },
   headline: {
