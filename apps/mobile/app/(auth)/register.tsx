@@ -24,6 +24,7 @@ import { normalizeNigerianPhone } from '../../src/utils/phone';
 const registerFormSchema = z
   .object({
     method: z.enum(['phone', 'email']),
+    displayName: z.string().optional(),
     phone: z.string().optional(),
     email: z.string().optional(),
     password: z.string().optional(),
@@ -41,21 +42,27 @@ const registerFormSchema = z
     if (data.method === 'phone') {
       const result = registerPhoneSchema.safeParse({
         method: 'phone',
+        displayName: data.displayName ?? '',
         phone: data.phone ?? '',
         isOver16: true,
       });
       if (!result.success) {
-        ctx.addIssue({
-          code: z.ZodIssueCode.custom,
-          message: result.error.issues[0]?.message ?? 'Enter a valid phone number',
-          path: ['phone'],
-        });
+        for (const issue of result.error.issues) {
+          ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            message: issue.message,
+            path: issue.path.filter(
+              (part) => part !== 'method' && part !== 'isOver16',
+            ),
+          });
+        }
       }
       return;
     }
 
     const result = registerEmailSchema.safeParse({
       method: 'email',
+      displayName: data.displayName ?? '',
       email: data.email ?? '',
       password: data.password ?? '',
       isOver16: true,
@@ -86,6 +93,7 @@ export default function RegisterScreen() {
     resolver: zodResolver(registerFormSchema),
     defaultValues: {
       method: 'phone',
+      displayName: '',
       phone: '',
       email: '',
       password: '',
@@ -94,12 +102,17 @@ export default function RegisterScreen() {
   });
 
   const onSubmit = handleSubmit(async (values) => {
+    const displayName = values.displayName?.trim() ?? '';
+
     if (values.method === 'phone') {
       const phone = normalizeNigerianPhone(values.phone ?? '');
       const { error } = await supabase.auth.signInWithOtp({
         phone,
         options: {
           shouldCreateUser: true,
+          data: {
+            display_name: displayName,
+          },
         },
       });
 
@@ -110,7 +123,7 @@ export default function RegisterScreen() {
 
       router.push({
         pathname: '/(auth)/verify-otp',
-        params: { phone, flow: 'register' },
+        params: { phone, flow: 'register', displayName },
       });
       return;
     }
@@ -118,6 +131,11 @@ export default function RegisterScreen() {
     const { data, error } = await supabase.auth.signUp({
       email: values.email ?? '',
       password: values.password ?? '',
+      options: {
+        data: {
+          display_name: displayName,
+        },
+      },
     });
 
     if (error) {
@@ -133,7 +151,7 @@ export default function RegisterScreen() {
     }
 
     try {
-      const profile = await fetchMe();
+      const profile = await fetchMe(data.session?.access_token);
       syncProfileToStore(profile);
       router.replace(getPostAuthRoute(profile));
     } catch {
@@ -190,6 +208,22 @@ export default function RegisterScreen() {
               </Pressable>
             ))}
           </View>
+        )}
+      />
+      <Controller
+        control={control}
+        name="displayName"
+        render={({ field: { onChange, onBlur, value } }) => (
+          <FormField
+            label="Full name"
+            autoCapitalize="words"
+            autoComplete="name"
+            placeholder="e.g. Amaka Okafor"
+            value={value}
+            onChangeText={onChange}
+            onBlur={onBlur}
+            error={errors.displayName?.message}
+          />
         )}
       />
       {method === 'phone' ? (

@@ -4,6 +4,17 @@ import { syncProfileToStore } from '../services/profile-sync';
 import { supabase } from '../lib/supabase';
 import { useAuthStore } from '../stores/authStore';
 
+const AUTH_TIMEOUT_MS = 8_000;
+
+function withTimeout<T>(promise: Promise<T>, ms: number): Promise<T> {
+  return Promise.race([
+    promise,
+    new Promise<T>((_resolve, reject) => {
+      setTimeout(() => reject(new Error('Auth initialization timed out')), ms);
+    }),
+  ]);
+}
+
 export function useAuthInitialization() {
   const setSession = useAuthStore((state) => state.setSession);
   const setLoading = useAuthStore((state) => state.setLoading);
@@ -17,7 +28,7 @@ export function useAuthInitialization() {
     const loadProfile = async () => {
       setProfileLoading(true);
       try {
-        const profile = await fetchMe();
+        const profile = await withTimeout(fetchMe(), AUTH_TIMEOUT_MS);
         if (mounted) {
           syncProfileToStore(profile);
         }
@@ -32,42 +43,59 @@ export function useAuthInitialization() {
       }
     };
 
-    const init = async () => {
-      setLoading(true);
-      const { data } = await supabase.auth.getSession();
-
+    const finishInitialization = () => {
       if (!mounted) {
         return;
-      }
-
-      setSession(data.session, data.session?.user ?? null);
-
-      if (data.session) {
-        await loadProfile();
-      } else {
-        setProfile(null);
       }
 
       setLoading(false);
       setInitialized(true);
     };
 
+    const init = async () => {
+      setLoading(true);
+
+      try {
+        const { data } = await withTimeout(
+          supabase.auth.getSession(),
+          AUTH_TIMEOUT_MS,
+        );
+
+        if (!mounted) {
+          return;
+        }
+
+        setSession(data.session, data.session?.user ?? null);
+        finishInitialization();
+
+        if (data.session) {
+          void loadProfile();
+        } else {
+          setProfile(null);
+        }
+      } catch {
+        if (mounted) {
+          setSession(null, null);
+          setProfile(null);
+          finishInitialization();
+        }
+      }
+    };
+
     void init();
 
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange(async (_event, session) => {
+    } = supabase.auth.onAuthStateChange((_event, session) => {
       setSession(session, session?.user ?? null);
+      finishInitialization();
 
       if (session) {
-        await loadProfile();
+        void loadProfile();
       } else {
         setProfile(null);
         setProfileLoading(false);
       }
-
-      setLoading(false);
-      setInitialized(true);
     });
 
     return () => {

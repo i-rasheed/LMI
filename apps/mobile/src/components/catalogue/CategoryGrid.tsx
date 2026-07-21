@@ -1,52 +1,44 @@
+import { PRODUCT_CATEGORIES, ProductCategory, getProductCategoryLabel } from '@lmi/shared';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
-import { ProductCategory } from '../../types/catalogue';
-import { formatCategory } from './ProductChip';
 import { colors, radius, spacing, typography } from '../../theme';
-
-const CATEGORY_ICONS: Record<ProductCategory, string> = {
-  vegetables: '🥬',
-  grains: '🌾',
-  protein: '🍗',
-  spices: '🌶️',
-  oils: '🫒',
-  fruits: '🍊',
-  other: '📦',
-};
-
-const CATEGORY_ORDER: ProductCategory[] = [
-  'vegetables',
-  'grains',
-  'protein',
-  'spices',
-  'oils',
-  'fruits',
-  'other',
-];
 
 interface CategoryGridProps {
   counts?: Record<string, number>;
+  selectedCategory?: ProductCategory | null;
   onCategoryPress: (category: ProductCategory) => void;
 }
 
-export function CategoryGrid({ counts, onCategoryPress }: CategoryGridProps) {
+export function CategoryGrid({
+  counts,
+  selectedCategory,
+  onCategoryPress,
+}: CategoryGridProps) {
   return (
     <View style={styles.grid}>
-      {CATEGORY_ORDER.map((category) => (
-        <Pressable
-          key={category}
-          style={styles.tile}
-          onPress={() => onCategoryPress(category)}
-        >
-          <Text style={styles.icon}>{CATEGORY_ICONS[category]}</Text>
-          <Text style={styles.label}>{formatCategory(category)}</Text>
-          {counts?.[category] != null ? (
-            <Text style={styles.count}>{counts[category]} items</Text>
+      {PRODUCT_CATEGORIES.map((category) => {
+        const isSelected = selectedCategory === category.value;
+
+        return (
+          <Pressable
+            key={category.value}
+            style={[styles.tile, isSelected && styles.tileSelected]}
+            onPress={() => onCategoryPress(category.value)}
+          >
+          <Text style={styles.icon}>{category.icon}</Text>
+          <Text style={styles.label}>{category.label}</Text>
+          {counts?.[category.value] != null ? (
+            <Text style={styles.count}>
+              {counts[category.value]} item{counts[category.value] === 1 ? '' : 's'}
+            </Text>
           ) : null}
         </Pressable>
-      ))}
+        );
+      })}
     </View>
   );
 }
+
+export { getProductCategoryLabel as formatCategory };
 
 const styles = StyleSheet.create({
   grid: {
@@ -63,6 +55,10 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: colors.neutral[100],
     gap: spacing.xs,
+  },
+  tileSelected: {
+    borderColor: colors.green.primary,
+    backgroundColor: colors.green.light,
   },
   icon: {
     fontSize: 24,

@@ -20,11 +20,6 @@ const ROLES: Array<{
     description: 'Find the best prices and save on your market run',
   },
   {
-    role: 'reporter',
-    title: 'Reporter',
-    description: 'Share prices and build your reputation',
-  },
-  {
     role: 'vendor',
     title: 'Vendor',
     description: 'List your stall and reach more customers',

@@ -25,6 +25,8 @@ export const queryKeys = {
       filters?: Record<string, unknown>,
     ) => ['prices', 'compare', productId, sort, lat, lng, filters] as const,
     history: (productId: string) => ['prices', 'history', productId] as const,
+    marketAverage: (productId: string, marketId: string, unit: string) =>
+      ['prices', 'average', productId, marketId, unit] as const,
   },
   admin: {
     dashboard: ['admin', 'dashboard'] as const,
@@ -50,11 +52,6 @@ export const queryKeys = {
   subscriptions: {
     plans: ['subscriptions', 'plans'] as const,
     me: ['subscriptions', 'me'] as const,
-  },
-  reporters: {
-    leaderboard: ['reporters', 'leaderboard'] as const,
-    profile: (id: string) => ['reporters', id] as const,
-    submissions: ['reporters', 'me', 'submissions'] as const,
   },
   ai: {
     search: (query: string) => ['ai', 'search', query] as const,

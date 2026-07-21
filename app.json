@@ -1,0 +1,12 @@
+{
+  "expo": {
+    "extra": {
+      "eas": {
+        "projectId": "65c09038-8ad6-4c63-850c-a3c2135dace0"
+      }
+    },
+    "android": {
+      "package": "com.irasheed.lmi"
+    }
+  }
+}

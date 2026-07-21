@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import { signupRoleSchema } from '../types/enums';
+import { displayNameSchema } from './profile';
 
 const passwordSchema = z
   .string()
@@ -17,6 +18,7 @@ export const phoneNumberSchema = z
   );
 
 const registerBaseSchema = z.object({
+  displayName: displayNameSchema,
   isOver16: z.literal(true, {
     errorMap: () => ({ message: 'You must be 16 or older to use LMI' }),
   }),
@@ -53,3 +55,5 @@ export const roleSelectSchema = z.object({
 export type RegisterInput = z.infer<typeof registerSchema>;
 export type VerifyOtpInput = z.infer<typeof verifyOtpSchema>;
 export type RoleSelectInput = z.infer<typeof roleSelectSchema>;
+
+export { displayNameSchema };

@@ -1,7 +1,7 @@
 import { z } from 'zod';
-import { vendorProductSchema } from './vendor-product';
+import { vendorProductBaseSchema } from './vendor-product';
 
-export const updateVendorProductSchema = vendorProductSchema
+export const updateVendorProductSchema = vendorProductBaseSchema
   .partial()
   .refine(
     (value) => Object.keys(value).length > 0,

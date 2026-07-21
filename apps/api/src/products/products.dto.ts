@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { productCategorySchema } from '@lmi/shared';
 
 export const productSearchQuerySchema = z.object({
   q: z.string().trim().min(1, 'Search query is required'),
@@ -13,17 +14,7 @@ export type ProductSearchQuery = z.infer<typeof productSearchQuerySchema>;
 export type TrendingProductsQuery = z.infer<typeof trendingProductsQuerySchema>;
 
 export const listProductsQuerySchema = z.object({
-  category: z
-    .enum([
-      'vegetables',
-      'grains',
-      'protein',
-      'spices',
-      'oils',
-      'fruits',
-      'other',
-    ])
-    .optional(),
+  category: productCategorySchema.optional(),
   limit: z.coerce.number().int().min(1).max(100).optional(),
 });
 

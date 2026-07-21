@@ -1,7 +1,4 @@
-import { submitPriceSchema } from '@lmi/shared';
 import { z } from 'zod';
-
-export { submitPriceSchema };
 
 export const marketAverageQuerySchema = z.object({
   productId: z.string().uuid(),
@@ -10,7 +7,7 @@ export const marketAverageQuerySchema = z.object({
 });
 
 export const comparePricesQuerySchema = z.object({
-  sort: z.enum(['cheapest', 'freshest', 'nearest', 'reporters']).optional(),
+  sort: z.enum(['cheapest', 'freshest', 'nearest']).optional(),
   lat: z.coerce.number().min(-90).max(90).optional(),
   lng: z.coerce.number().min(-180).max(180).optional(),
   area: z.string().trim().optional(),

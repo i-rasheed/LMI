@@ -12,17 +12,22 @@ import { AuthScreenLayout } from '../../src/components/auth/AuthScreenLayout';
 import { PrimaryButton } from '../../src/components/auth/PrimaryButton';
 import { getPostAuthRoute } from '../../src/hooks/useAuthRedirect';
 import { supabase } from '../../src/lib/supabase';
-import { fetchMe } from '../../src/services/auth.service';
+import { fetchMe, updateProfile } from '../../src/services/auth.service';
 import { syncProfileToStore } from '../../src/services/profile-sync';
 import { colors, radius, spacing, typography } from '../../src/theme';
 import { maskPhone } from '../../src/utils/phone';
 
 export default function VerifyOtpScreen() {
-  const { phone, flow } = useLocalSearchParams<{
+  const { phone, flow, displayName } = useLocalSearchParams<{
     phone?: string;
     flow?: 'register' | 'login';
+    displayName?: string;
   }>();
   const phoneValue = useMemo(() => String(phone ?? ''), [phone]);
+  const displayNameValue = useMemo(
+    () => String(displayName ?? '').trim(),
+    [displayName],
+  );
   const [digits, setDigits] = useState(['', '', '', '', '', '']);
   const [error, setError] = useState<string | null>(null);
   const [attemptsRemaining, setAttemptsRemaining] = useState(5);
@@ -72,7 +77,7 @@ export default function VerifyOtpScreen() {
     setLoading(true);
     setError(null);
 
-    const { error: verifyError } = await supabase.auth.verifyOtp({
+    const { error: verifyError, data } = await supabase.auth.verifyOtp({
       phone: phoneValue,
       token: nextToken,
       type: 'sms',
@@ -90,7 +95,16 @@ export default function VerifyOtpScreen() {
     }
 
     try {
-      const profile = await fetchMe();
+      let profile = await fetchMe(data.session?.access_token);
+      if (
+        flow === 'register' &&
+        displayNameValue &&
+        (!profile.displayName ||
+          profile.displayName === phoneValue ||
+          profile.displayName.startsWith('User '))
+      ) {
+        profile = await updateProfile(displayNameValue);
+      }
       syncProfileToStore(profile);
       router.replace(getPostAuthRoute(profile));
     } catch {

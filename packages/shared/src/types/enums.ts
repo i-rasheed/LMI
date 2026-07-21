@@ -18,15 +18,13 @@ export const priceUnitSchema = z.enum([
   'crate',
   'bag',
 ]);
-export const productCategorySchema = z.enum([
-  'vegetables',
-  'grains',
-  'protein',
-  'spices',
-  'oils',
-  'fruits',
-  'other',
-]);
+export {
+  productCategorySchema,
+  PRODUCT_CATEGORY_VALUES,
+  PRODUCT_CATEGORIES,
+  getProductCategoryLabel,
+} from '../constants/product-categories';
+export type { ProductCategory } from '../constants/product-categories';
 export const priceSourceSchema = z.enum(['reporter', 'vendor']);
 export const submissionStatusSchema = z.enum([
   'live',
@@ -44,7 +42,6 @@ export type LanguagePreference = z.infer<typeof languagePreferenceSchema>;
 export type ThemePreference = z.infer<typeof themePreferenceSchema>;
 export type BadgeLevel = z.infer<typeof badgeLevelSchema>;
 export type PriceUnit = z.infer<typeof priceUnitSchema>;
-export type ProductCategory = z.infer<typeof productCategorySchema>;
 export type PriceSource = z.infer<typeof priceSourceSchema>;
 export type SubmissionStatus = z.infer<typeof submissionStatusSchema>;
 export type FlagReason = z.infer<typeof flagReasonSchema>;
@@ -52,5 +49,5 @@ export type ClaimStatus = z.infer<typeof claimStatusSchema>;
 export type VendorTier = z.infer<typeof vendorTierSchema>;
 
 /** Signup roles only — admin is assigned server-side. */
-export const signupRoleSchema = z.enum(['shopper', 'reporter', 'vendor']);
+export const signupRoleSchema = z.enum(['shopper', 'vendor']);
 export type SignupRole = z.infer<typeof signupRoleSchema>;

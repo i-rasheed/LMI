@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
+import { join } from 'path';
 import { ScheduleModule } from '@nestjs/schedule';
 import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 import { APP_GUARD } from '@nestjs/core';
@@ -19,11 +20,13 @@ import { VendorsModule } from './vendors/vendors.module';
 import { NotificationsModule } from './notifications/notifications.module';
 import { SubscriptionsModule } from './subscriptions/subscriptions.module';
 import { AiModule } from './ai/ai.module';
-import { ReportersModule } from './reporters/reporters.module';
 
 @Module({
   imports: [
-    ConfigModule.forRoot({ isGlobal: true }),
+    ConfigModule.forRoot({
+      isGlobal: true,
+      envFilePath: join(__dirname, '..', '.env'),
+    }),
     ScheduleModule.forRoot(),
     ThrottlerModule.forRoot([
       {
@@ -47,7 +50,6 @@ import { ReportersModule } from './reporters/reporters.module';
     NotificationsModule,
     SubscriptionsModule,
     AiModule,
-    ReportersModule,
   ],
   controllers: [AppController],
   providers: [

@@ -25,4 +25,25 @@ describe('vendorProductSchema', () => {
       vendorProductSchema.safeParse({ ...valid, priceNaira: -1 }).success,
     ).toBe(false);
   });
+
+  it('accepts manual product name without category', () => {
+    expect(
+      vendorProductSchema.safeParse({
+        productName: 'Watermelon',
+        priceNaira: 1200,
+        unit: 'kg',
+        isAvailableToday: true,
+      }).success,
+    ).toBe(true);
+  });
+
+  it('requires a product name', () => {
+    const result = vendorProductSchema.safeParse({
+      priceNaira: 1200,
+      unit: 'kg',
+      isAvailableToday: true,
+    });
+
+    expect(result.success).toBe(false);
+  });
 });

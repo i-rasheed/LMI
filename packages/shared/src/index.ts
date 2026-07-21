@@ -1,5 +1,10 @@
 export * from './types/enums';
 export * from './constants';
+export {
+  PRODUCT_CATEGORY_VALUES,
+  PRODUCT_CATEGORIES,
+  getProductCategoryLabel,
+} from './constants/product-categories';
 
 export {
   registerSchema,
@@ -45,8 +50,8 @@ export type { AdminClaimActionInput } from './schemas/admin-claim-action';
 export { updateVendorProductSchema } from './schemas/update-vendor-product';
 export type { UpdateVendorProductInput } from './schemas/update-vendor-product';
 
-export { profileSchema } from './schemas/profile';
-export type { ProfileInput } from './schemas/profile';
+export { profileSchema, updateProfileSchema, displayNameSchema } from './schemas/profile';
+export type { ProfileInput, UpdateProfileInput } from './schemas/profile';
 
 export {
   aiSearchSchema,

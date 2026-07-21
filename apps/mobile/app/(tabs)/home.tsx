@@ -22,12 +22,15 @@ import { useMarkets } from '../../src/hooks/useMarkets';
 import { useNetworkStatus } from '../../src/hooks/useNetworkStatus';
 import { useTrending } from '../../src/hooks/useTrending';
 import { useAuthStore } from '../../src/stores/authStore';
+import { getGreetingFirstName } from '../../src/utils/user-display';
 import { MarketListItem, ProductListItem } from '../../src/types/catalogue';
 import { colors, spacing, typography } from '../../src/theme';
 
 export default function HomeScreen() {
   const insets = useSafeAreaInsets();
-  const displayName = useAuthStore((state) => state.profile?.displayName);
+  const profile = useAuthStore((state) => state.profile);
+  const user = useAuthStore((state) => state.user);
+  const greetingName = getGreetingFirstName(profile, user);
   const { isOffline } = useNetworkStatus();
   const {
     location,
@@ -44,9 +47,9 @@ export default function HomeScreen() {
 
   const isLoading =
     isLocationLoading ||
-    marketsQuery.isLoading ||
-    trendingQuery.isLoading;
-  const hasError = marketsQuery.isError || trendingQuery.isError;
+    (marketsQuery.isLoading && !marketsQuery.data) ||
+    (trendingQuery.isLoading && !trendingQuery.data);
+  const showFullError = marketsQuery.isError && trendingQuery.isError;
 
   const onRefresh = useCallback(() => {
     void marketsQuery.refetch();
@@ -59,8 +62,10 @@ export default function HomeScreen() {
   const openMarket = (market: MarketListItem) =>
     router.push(`/market/${market.id}`);
 
-  const greetingName = displayName?.split(' ')[0] ?? 'there';
   const areaLabel = hasLocation ? 'Near you' : 'Lagos';
+  const greeting = greetingName
+    ? `Hello, ${greetingName} · ${areaLabel}`
+    : `Hello · ${areaLabel}`;
 
   return (
     <View style={[styles.container, { paddingTop: insets.top }]}>
@@ -68,7 +73,7 @@ export default function HomeScreen() {
 
       {isLoading ? (
         <HomeSkeleton />
-      ) : hasError ? (
+      ) : showFullError ? (
         <View style={styles.errorWrap}>
           <ErrorState
             headline="Couldn't load prices"
@@ -88,9 +93,7 @@ export default function HomeScreen() {
           contentContainerStyle={styles.scrollContent}
           showsVerticalScrollIndicator={false}
         >
-          <Text style={styles.greeting}>
-            Hello, {greetingName} · {areaLabel}
-          </Text>
+          <Text style={styles.greeting}>{greeting}</Text>
 
           <SearchBar editable={false} onPress={openSearch} />
 
@@ -107,6 +110,12 @@ export default function HomeScreen() {
               markets={marketsQuery.data ?? []}
               onMarketPress={openMarket}
             />
+          ) : marketsQuery.isError ? (
+            <ErrorState
+              headline="Couldn't load markets"
+              message="Something went wrong. Try again."
+              onRetry={() => void marketsQuery.refetch()}
+            />
           ) : (
             <EmptyState
               headline="See markets near you"
@@ -122,6 +131,12 @@ export default function HomeScreen() {
             <ProductChipRow
               products={trendingQuery.data ?? []}
               onProductPress={openProduct}
+            />
+          ) : trendingQuery.isError ? (
+            <ErrorState
+              headline="Couldn't load trending products"
+              message="Something went wrong. Try again."
+              onRetry={() => void trendingQuery.refetch()}
             />
           ) : (
             <EmptyState

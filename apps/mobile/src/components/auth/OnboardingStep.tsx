@@ -111,17 +111,6 @@ export function OnboardingStep2Shopper() {
   );
 }
 
-export function OnboardingStep2Reporter() {
-  return (
-    <OnboardingStep
-      step={2}
-      headline="Help your community"
-      body="Share prices you see today and build trust with shoppers across Lagos"
-      nextHref="/(auth)/onboarding/step-3"
-    />
-  );
-}
-
 export function OnboardingStep2Vendor() {
   return (
     <OnboardingStep
@@ -138,7 +127,7 @@ export function OnboardingStep3() {
     <OnboardingStep
       step={3}
       headline="Prices you can trust"
-      body="Every price shows who reported it and when it was last updated"
+      body="Every price shows the market, vendor, and when it was last updated"
       isFinal
     />
   );
